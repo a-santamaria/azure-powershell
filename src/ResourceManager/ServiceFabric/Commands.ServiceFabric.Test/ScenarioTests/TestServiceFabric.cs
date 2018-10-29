@@ -12,9 +12,11 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------------
 
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Management.Automation;
 using Microsoft.Azure.Commands.ServiceFabric.Commands;
 using Microsoft.Azure.ServiceManagemenet.Common.Models;
-using Microsoft.WindowsAzure.Commands.Common;
 using Microsoft.WindowsAzure.Commands.ScenarioTest;
 using Microsoft.WindowsAzure.Commands.Test.Utilities.Common;
 using Xunit;
@@ -37,6 +39,10 @@ namespace Microsoft.Azure.Commands.ServiceFabric.Test.ScenarioTests
             ServiceFabricCmdletBase.NewCreatedKeyVaultWaitTimeInSec = 0;
             //change the thumbprint in the common.ps1 file as well
             ServiceFabricCmdletBase.TestThumbprint = "570BBCC85CBDAB98A442D08630996708F60A356D";
+
+            // Initialize cluster
+            //Collection<PSObject> psObjects = TestController.NewInstance.RunPsTest(_logger, "Test-NewAzureRmServiceFabricCluster");
+            //PSObject returnObject = psObjects.First();
         }
 
         [Fact]
@@ -106,7 +112,9 @@ namespace Microsoft.Azure.Commands.ServiceFabric.Test.ScenarioTests
         [Trait(Category.AcceptanceType, Category.CheckIn)]
         public void TestNewAzureRmServiceFabricCluster()
         {
-            TestController.NewInstance.RunPsTest(_logger, "Test-NewAzureRmServiceFabricCluster");
+            Collection<PSObject> psObjects = TestController.NewInstance.RunPsTest(_logger, "Test-NewAzureRmServiceFabricCluster");
+
+            PSObject returnObject = psObjects.First();
         }
 
         [Fact]

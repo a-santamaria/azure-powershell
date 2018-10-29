@@ -94,8 +94,32 @@ function Test-NewAzureRmServiceFabricCluster
 
     $cluster = New-AzureRmServiceFabricCluster -ResourceGroupName $resourceGroupName -VmPassword $vmPassword `
         -TemplateFile (Join-Path $pwd '\Resources\template.json') -ParameterFile (Join-Path $pwd '\Resources\parameters.json') -SecretIdentifier $keyvaulturi -Verbose
+
     $clusters = Get-AzureRmServiceFabricCluster -ClusterName $clusterName -ResourceGroupName $resourceGroupName
+
     Assert-NotNull $clusters.Where({$_.Name -eq $clusterName})
+
+    if (Get-ComputeTestMode -eq 'Record')
+    {
+		#Import-PfxCertificate -FilePath $cluster.Certificates[0].CertificateSavedLocalPath -CertStoreLocation Cert:\CurrentUser\My -Password $password
+		$thumbprint = $cluster.Certificates[0].CertificateThumbprint
+		$policy = New-AzureKeyVaultCertificatePolicy -SecretContentType application/x-pkcs12 -SubjectName "CN=AzureRMSFTestCert2" -IssuerName Self
+		Add-AzureKeyVaultCertificate -VaultName azurermsfkv -Name AzureRMSFTestCert2 -CertificatePolicy $policy
+		$cert = Get-AzureKeyVaultCertificate -VaultName azurermsfkv -Name AzureRMSFTestCert2 | select Thumbprint, SecretId
+
+		# connect to cluster before finishig
+		Import-Module \\reddog\Builds\branches\git_windowsfabric_develop_latest\debug-amd64\bin\FabricDrop\ServiceFabricClientPackage\ServiceFabric
+		Connect-ServiceFabricCluster -ConnectionEndpoint azurermsfcluster.southcentralus.cloudapp.azure.com:19000 -X509Credential -FindType FindByThumbprint -FindValue $thumbprint -StoreLocation CurrentUser -StoreName My -KeepAliveIntervalInSec 300 -Verbose -ServerCertThumbprint $thumbprint
+
+		# TODO return values 
+		# $cert.Thumbprint
+		# $cert.SecretId
+		# return $cert
+	}
+	else
+	{
+		return null
+	}
 }
 
 function Test-AddAzureRmServiceFabricNodeType

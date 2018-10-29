@@ -18,9 +18,11 @@ using Microsoft.Rest.ClientRuntime.Azure.TestFramework;
 using Microsoft.WindowsAzure.Commands.ScenarioTest;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Management.Automation;
 using Microsoft.Azure.Graph.RBAC.Version1_6;
 using Microsoft.Azure.Management.ServiceFabric;
 using TestEnvironmentFactory = Microsoft.Rest.ClientRuntime.Azure.TestFramework.TestEnvironmentFactory;
@@ -59,7 +61,7 @@ namespace Microsoft.Azure.Commands.ServiceFabric.Test.ScenarioTests
             _helper = new EnvironmentSetupHelper();
         }
 
-        public void RunPsTest(XunitTracingInterceptor logger, params string[] scripts)
+        public Collection<PSObject> RunPsTest(XunitTracingInterceptor logger, params string[] scripts)
         {
             var sf = new StackTrace().GetFrame(1);
             var callingClassType = sf.GetMethod().ReflectedType?.ToString();
@@ -67,7 +69,7 @@ namespace Microsoft.Azure.Commands.ServiceFabric.Test.ScenarioTests
 
             _helper.TracingInterceptor = logger;
 
-            RunPsTestWorkflow(
+            return RunPsTestWorkflow(
                 () => scripts,
                 // no custom cleanup 
                 null,
@@ -75,7 +77,7 @@ namespace Microsoft.Azure.Commands.ServiceFabric.Test.ScenarioTests
                 mockName);
         }
 
-        public void RunPsTestWorkflow(
+        public Collection<PSObject> RunPsTestWorkflow(
             Func<string[]> scriptBuilder,
             Action cleanup,
             string callingClassType,
@@ -116,7 +118,7 @@ namespace Microsoft.Azure.Commands.ServiceFabric.Test.ScenarioTests
                     var psScripts = scriptBuilder?.Invoke();
                     if (psScripts != null)
                     {
-                        _helper.RunPowerShellTest(psScripts);
+                        return _helper.RunPowerShellTest(psScripts);
                     }
                 }
                 finally
@@ -124,6 +126,8 @@ namespace Microsoft.Azure.Commands.ServiceFabric.Test.ScenarioTests
                     cleanup?.Invoke();
                 }
             }
+
+            return null;
         }
 
         private void SetupManagementClients(MockContext context)
