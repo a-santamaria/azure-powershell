@@ -16,6 +16,7 @@ using Microsoft.Azure.Commands.RecoveryServices.Backup.Cmdlets.Models;
 using Microsoft.Azure.Commands.RecoveryServices.Backup.Cmdlets.ServiceClientAdapterNS;
 using Microsoft.Azure.Commands.RecoveryServices.Backup.Helpers;
 using Microsoft.Azure.Commands.RecoveryServices.Backup.Properties;
+using Microsoft.Azure.Management.Internal.Resources.Models;
 using Microsoft.Azure.Management.Internal.Resources.Utilities.Models;
 using Microsoft.Azure.Management.RecoveryServices.Backup.Models;
 using Microsoft.Rest.Azure.OData;
@@ -147,7 +148,115 @@ namespace Microsoft.Azure.Commands.RecoveryServices.Backup.Cmdlets.ProviderModel
 
         public RestAzureNS.AzureOperationResponse TriggerRestore()
         {
-            throw new NotImplementedException();
+            string vaultName = (string)ProviderData[VaultParams.VaultName];
+            string resourceGroupName = (string)ProviderData[VaultParams.ResourceGroupName];
+            string vaultLocation = (string)ProviderData[VaultParams.VaultLocation];
+            CmdletModel.AzureFileShareRecoveryPoint recoveryPoint = ProviderData[RestoreBackupItemParams.RecoveryPoint]
+                as CmdletModel.AzureFileShareRecoveryPoint;
+            string storageAccountName = ProviderData.ContainsKey(RestoreBackupItemParams.StorageAccountName) ?
+                ProviderData[RestoreBackupItemParams.StorageAccountName].ToString() : null;
+            string storageAccountResourceGroupName = ProviderData.ContainsKey(RestoreBackupItemParams.StorageAccountResourceGroupName) ?
+                ProviderData[RestoreBackupItemParams.StorageAccountResourceGroupName].ToString() : null;
+            string copyOptions = (string)ProviderData[RestoreFSBackupItemParams.ResolveConflict];
+            string sourceFilePath = ProviderData.ContainsKey(RestoreFSBackupItemParams.SourceFilePath) ?
+                (string)ProviderData[RestoreFSBackupItemParams.SourceFilePath] : null;
+            string sourceFileType = ProviderData.ContainsKey(RestoreFSBackupItemParams.SourceFileType) ?
+                (string)ProviderData[RestoreFSBackupItemParams.SourceFileType] : null;
+            string targetStorageAccountName =
+                ProviderData.ContainsKey(RestoreFSBackupItemParams.TargetStorageAccountName) ?
+                (string)ProviderData[RestoreFSBackupItemParams.TargetStorageAccountName] : null;
+            string targetFileShareName = ProviderData.ContainsKey(RestoreFSBackupItemParams.TargetFileShareName) ?
+                (string)ProviderData[RestoreFSBackupItemParams.TargetFileShareName] : null;
+            string targetFolder = ProviderData.ContainsKey(RestoreFSBackupItemParams.TargetFolder) ?
+                (string)ProviderData[RestoreFSBackupItemParams.TargetFolder] : null;
+
+            //validate file recovery request
+            ValidateFileRestoreRequest(sourceFilePath, sourceFileType);
+
+            //validate alternate location restore request
+            ValidateLocationRestoreRequest(targetFileShareName, targetStorageAccountName);
+
+            if (targetFileShareName != null && targetStorageAccountName != null && targetFolder == null)
+            {
+                targetFolder = "/";
+            }
+
+            GenericResource storageAccountResource = ServiceClientAdapter.GetStorageAccountResource(recoveryPoint.ContainerName.Split(';')[2]);
+            GenericResource targetStorageAccountResource = null;
+            string targetStorageAccountLocation = null;
+            if (targetStorageAccountName != null)
+            {
+                targetStorageAccountResource = ServiceClientAdapter.GetStorageAccountResource(targetStorageAccountName);
+                targetStorageAccountLocation = targetStorageAccountResource.Location;
+            }
+
+            List<RestoreFileSpecs> restoreFileSpecs = null;
+            TargetAFSRestoreInfo targetDetails = null;
+            RestoreFileSpecs restoreFileSpec = new RestoreFileSpecs();
+            AzureFileShareRestoreRequest restoreRequest = new AzureFileShareRestoreRequest();
+            restoreRequest.CopyOptions = copyOptions;
+            restoreRequest.SourceResourceId = storageAccountResource.Id;
+            if (sourceFilePath != null)
+            {
+                restoreFileSpec.Path = sourceFilePath;
+                restoreFileSpec.FileSpecType = sourceFileType;
+                restoreRequest.RestoreRequestType = RestoreRequestType.ItemLevelRestore;
+                if (targetFolder != null)
+                {
+                    //scenario : item level restore for alternate location
+                    restoreFileSpec.TargetFolderPath = targetFolder;
+                    targetDetails = new TargetAFSRestoreInfo();
+                    targetDetails.Name = targetFileShareName;
+                    targetDetails.TargetResourceId = targetStorageAccountResource.Id;
+                    restoreRequest.RecoveryType = RecoveryType.AlternateLocation;
+                }
+                else
+                {
+                    //scenario : item level restore for original location
+                    restoreFileSpec.TargetFolderPath = null;
+                    restoreRequest.RecoveryType = RecoveryType.OriginalLocation;
+                }
+
+                restoreFileSpecs = new List<RestoreFileSpecs>();
+                restoreFileSpecs.Add(restoreFileSpec);
+            }
+            else
+            {
+                restoreRequest.RestoreRequestType = RestoreRequestType.FullShareRestore;
+                if (targetFolder != null)
+                {
+                    //scenario : full level restore for alternate location
+                    restoreFileSpec.Path = null;
+                    restoreFileSpec.TargetFolderPath = targetFolder;
+                    restoreFileSpec.FileSpecType = null;
+                    restoreFileSpecs = new List<RestoreFileSpecs>();
+                    restoreFileSpecs.Add(restoreFileSpec);
+                    targetDetails = new TargetAFSRestoreInfo();
+                    targetDetails.Name = targetFileShareName;
+                    targetDetails.TargetResourceId = targetStorageAccountResource.Id;
+                    restoreRequest.RecoveryType = RecoveryType.AlternateLocation;
+                }
+                else
+                {
+                    //scenario : full level restore for original location
+                    restoreRequest.RecoveryType = RecoveryType.OriginalLocation;
+                }
+            }
+
+            restoreRequest.RestoreFileSpecs = restoreFileSpecs;
+            restoreRequest.TargetDetails = targetDetails;
+
+            RestoreRequestResource triggerRestoreRequest = new RestoreRequestResource();
+            triggerRestoreRequest.Properties = restoreRequest;
+
+            var response = ServiceClientAdapter.RestoreDisk(
+                recoveryPoint,
+                targetStorageAccountLocation = targetStorageAccountLocation ?? storageAccountResource.Location,
+                triggerRestoreRequest,
+                vaultName: vaultName,
+                resourceGroupName: resourceGroupName,
+                vaultLocation: vaultLocation);
+            return response;
         }
 
         public ProtectedItemResource GetProtectedItem()
@@ -239,7 +348,7 @@ namespace Microsoft.Azure.Commands.RecoveryServices.Backup.Cmdlets.ProviderModel
                                 (CmdletModel.LongTermRetentionPolicy)((AzureFileSharePolicy)policy).RetentionPolicy);
                 azureFileShareProtectionPolicy.SchedulePolicy = PolicyHelpers.GetServiceClientSimpleSchedulePolicy(
                                 (CmdletModel.SimpleSchedulePolicy)((AzureFileSharePolicy)policy).SchedulePolicy);
-                azureFileShareProtectionPolicy.TimeZone = DateTimeKind.Utc.ToString();
+                azureFileShareProtectionPolicy.TimeZone = DateTimeKind.Utc.ToString().ToUpper();
                 azureFileShareProtectionPolicy.WorkLoadType = ConversionUtils.GetServiceClientWorkloadType(policy.WorkloadType.ToString());
                 serviceClientRequest.Properties = azureFileShareProtectionPolicy;
 
@@ -277,7 +386,7 @@ namespace Microsoft.Azure.Commands.RecoveryServices.Backup.Cmdlets.ProviderModel
                                                     (CmdletModel.LongTermRetentionPolicy)retentionPolicy);
                 azureFileShareProtectionPolicy.SchedulePolicy = PolicyHelpers.GetServiceClientSimpleSchedulePolicy(
                                                     (CmdletModel.SimpleSchedulePolicy)schedulePolicy);
-                azureFileShareProtectionPolicy.TimeZone = DateTimeKind.Utc.ToString();
+                azureFileShareProtectionPolicy.TimeZone = DateTimeKind.Utc.ToString().ToUpper();
                 azureFileShareProtectionPolicy.WorkLoadType = ConversionUtils.GetServiceClientWorkloadType(workloadType.ToString());
                 serviceClientRequest.Properties = azureFileShareProtectionPolicy;
             }
@@ -665,7 +774,7 @@ namespace Microsoft.Azure.Commands.RecoveryServices.Backup.Cmdlets.ProviderModel
                 properties.PolicyId = policy.Id;
                 properties.SourceResourceId = sourceResourceId;
             }
-            else if(disableWithRetentionData)
+            else if (disableWithRetentionData)
             {
                 //Disable protection while retaining backup data
                 ValidateAzureFileShareDisableProtectionRequest(itemBase);
@@ -832,10 +941,29 @@ namespace Microsoft.Azure.Commands.RecoveryServices.Backup.Cmdlets.ProviderModel
                 throw new ArgumentException(string.Format(Resources.InvalidProtectionPolicyException,
                                             typeof(AzureFileShareItem).ToString()));
             }
+        }
 
-            if (string.IsNullOrEmpty(((AzureFileShareItem)itemBase).ParentContainerFabricId))
+        private void ValidateFileRestoreRequest(string sourceFilePath, string sourceFileType)
+        {
+            if (sourceFilePath == null && sourceFileType != null)
             {
-                throw new ArgumentException(Resources.ParentContainerFabricIdIsEmptyOrNull);
+                throw new ArgumentException(string.Format(Resources.AzureFileSourceFilePathMissingException));
+            }
+            else if (sourceFilePath != null && sourceFileType == null)
+            {
+                throw new ArgumentException(string.Format(Resources.AzureFileSourceFileTypeMissingException));
+            }
+        }
+
+        private void ValidateLocationRestoreRequest(string targetFileShareName, string targetStorageAccountName)
+        {
+            if (targetFileShareName == null && targetStorageAccountName != null)
+            {
+                throw new ArgumentException(string.Format(Resources.AzureFileTargetFSNameMissingException));
+            }
+            else if (targetFileShareName != null && targetStorageAccountName == null)
+            {
+                throw new ArgumentException(string.Format(Resources.AzureFileTargetSANameMissingException));
             }
         }
     }

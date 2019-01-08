@@ -110,6 +110,42 @@ namespace Microsoft.Azure.Commands.RecoveryServices.Backup.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Provide SourceFilePath for File restore or remove SourceFileType for file share restore.
+        /// </summary>
+        public static string AzureFileSourceFilePathMissingException {
+            get {
+                return ResourceManager.GetString("AzureFileSourceFilePathMissingException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Provide SourceFileType for File restore or remove SourceFilePath for file share restore.
+        /// </summary>
+        public static string AzureFileSourceFileTypeMissingException {
+            get {
+                return ResourceManager.GetString("AzureFileSourceFileTypeMissingException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Provide TargetFileShareName for Alternate Location restore or remove TargetStorageAccountName for Original Location restore.
+        /// </summary>
+        public static string AzureFileTargetFSNameMissingException {
+            get {
+                return ResourceManager.GetString("AzureFileTargetFSNameMissingException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Provide TargetStorageAccountName for Alternate Location restore or remove TargetFileShareName for Original Location restore.
+        /// </summary>
+        public static string AzureFileTargetSANameMissingException {
+            get {
+                return ResourceManager.GetString("AzureFileTargetSANameMissingException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to BackupManagementType value should be empty for WorkloadType AzureFiles..
         /// </summary>
         public static string AzureFileUnsupportedBackupManagementTypeException {
@@ -938,15 +974,6 @@ namespace Microsoft.Azure.Commands.RecoveryServices.Backup.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Storage account location should be same as vault location.
-        /// </summary>
-        public static string RestoreDiskIncorrectRegion {
-            get {
-                return ResourceManager.GetString("RestoreDiskIncorrectRegion", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Found more than one StorageAccount with same name. Some thing went wrong.
         /// </summary>
         public static string RestoreDiskMoreThanOneAccFound {
@@ -1078,6 +1105,15 @@ namespace Microsoft.Azure.Commands.RecoveryServices.Backup.Properties {
         public static string TriggerEnquiryFailureErrorCode {
             get {
                 return ResourceManager.GetString("TriggerEnquiryFailureErrorCode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Storage account location should be same as vault location.
+        /// </summary>
+        public static string TriggerRestoreIncorrectRegion {
+            get {
+                return ResourceManager.GetString("TriggerRestoreIncorrectRegion", resourceCulture);
             }
         }
         

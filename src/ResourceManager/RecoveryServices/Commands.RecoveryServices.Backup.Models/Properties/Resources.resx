@@ -377,7 +377,7 @@ Please contact Microsoft for further assistance.</value>
   <data name="RestoreAzureStorageNotFound" xml:space="preserve">
     <value>Storage account not found</value>
   </data>
-  <data name="RestoreDiskIncorrectRegion" xml:space="preserve">
+  <data name="TriggerRestoreIncorrectRegion" xml:space="preserve">
     <value>Storage account location should be same as vault location</value>
   </data>
   <data name="RestoreDiskMoreThanOneAccFound" xml:space="preserve">
@@ -534,5 +534,17 @@ Please contact Microsoft for further assistance.</value>
   </data>
   <data name="ParentContainerFabricIdIsEmptyOrNull" xml:space="preserve">
     <value>ParentContainerFabricId is NULL or Empty. Please enter valid ParentContainerFabricId</value>
+  </data>
+  <data name="AzureFileSourceFilePathMissingException" xml:space="preserve">
+    <value>Provide SourceFilePath for File restore or remove SourceFileType for file share restore</value>
+  </data>
+  <data name="AzureFileSourceFileTypeMissingException" xml:space="preserve">
+    <value>Provide SourceFileType for File restore or remove SourceFilePath for file share restore</value>
+  </data>
+  <data name="AzureFileTargetFSNameMissingException" xml:space="preserve">
+    <value>Provide TargetFileShareName for Alternate Location restore or remove TargetStorageAccountName for Original Location restore</value>
+  </data>
+  <data name="AzureFileTargetSANameMissingException" xml:space="preserve">
+    <value>Provide TargetStorageAccountName for Alternate Location restore or remove TargetFileShareName for Original Location restore</value>
   </data>
 </root>
