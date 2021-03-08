@@ -124,7 +124,7 @@ namespace Microsoft.Azure.Commands.ServiceFabric.Commands
             HelpMessage = "The mode used to monitor health during a rolling upgrade. The values are Monitored, and UnmonitoredAuto.")]
         [Parameter(Mandatory = false, ParameterSetName = ByInputObject,
             HelpMessage = "The mode used to monitor health during a rolling upgrade. The values are Monitored, and UnmonitoredAuto.")]
-        public UpgradeMode UpgradeMode { get; set; }
+        public ApplicationUpgradeMode UpgradeMode { get; set; }
 
         #region RollingUpgradeMonitoringPolicy
 

@@ -14,7 +14,7 @@
 
 namespace Microsoft.Azure.Commands.ServiceFabric.Models
 {
-    public enum UpgradeMode
+    public enum ApplicationUpgradeMode
     {
         Monitored,
         UnmonitoredAuto

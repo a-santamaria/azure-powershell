@@ -17,7 +17,7 @@ Update a service fabric managed application. This allows to update the applicati
 Set-AzServiceFabricManagedClusterApplication [-ResourceGroupName] <String> [-ClusterName] <String>
  [-Name] <String> [[-ApplicationTypeVersion] <String>] [-ApplicationParameter <Hashtable>] [-ForceRestart]
  [-RecreateApplication] [-UpgradeReplicaSetCheckTimeoutSec <Int32>] [-InstanceCloseDelayDurationSec <Int32>]
- [-UpgradeMode <UpgradeMode>] [-FailureAction <FailureAction>] [-HealthCheckRetryTimeoutSec <Int32>]
+ [-UpgradeMode <ApplicationUpgradeMode>] [-FailureAction <FailureAction>] [-HealthCheckRetryTimeoutSec <Int32>]
  [-HealthCheckWaitDurationSec <Int32>] [-HealthCheckStableDurationSec <Int32>]
  [-UpgradeDomainTimeoutSec <Int32>] [-UpgradeTimeoutSec <Int32>] [-ConsiderWarningAsError]
  [-DefaultServiceTypeMaxPercentUnhealthyPartitionsPerService <Int32>]
@@ -32,7 +32,7 @@ Set-AzServiceFabricManagedClusterApplication [-ResourceGroupName] <String> [-Clu
 Set-AzServiceFabricManagedClusterApplication [[-ApplicationTypeVersion] <String>]
  [-ApplicationParameter <Hashtable>] [-ForceRestart] [-RecreateApplication]
  [-UpgradeReplicaSetCheckTimeoutSec <Int32>] [-InstanceCloseDelayDurationSec <Int32>]
- [-UpgradeMode <UpgradeMode>] [-FailureAction <FailureAction>] [-HealthCheckRetryTimeoutSec <Int32>]
+ [-UpgradeMode <ApplicationUpgradeMode>] [-FailureAction <FailureAction>] [-HealthCheckRetryTimeoutSec <Int32>]
  [-HealthCheckWaitDurationSec <Int32>] [-HealthCheckStableDurationSec <Int32>]
  [-UpgradeDomainTimeoutSec <Int32>] [-UpgradeTimeoutSec <Int32>] [-ConsiderWarningAsError]
  [-DefaultServiceTypeMaxPercentUnhealthyPartitionsPerService <Int32>]
@@ -47,7 +47,7 @@ Set-AzServiceFabricManagedClusterApplication [[-ApplicationTypeVersion] <String>
 Set-AzServiceFabricManagedClusterApplication [[-ApplicationTypeVersion] <String>]
  [-ApplicationParameter <Hashtable>] [-ForceRestart] [-RecreateApplication]
  [-UpgradeReplicaSetCheckTimeoutSec <Int32>] [-InstanceCloseDelayDurationSec <Int32>]
- [-UpgradeMode <UpgradeMode>] [-FailureAction <FailureAction>] [-HealthCheckRetryTimeoutSec <Int32>]
+ [-UpgradeMode <ApplicationUpgradeMode>] [-FailureAction <FailureAction>] [-HealthCheckRetryTimeoutSec <Int32>]
  [-HealthCheckWaitDurationSec <Int32>] [-HealthCheckStableDurationSec <Int32>]
  [-UpgradeDomainTimeoutSec <Int32>] [-UpgradeTimeoutSec <Int32>] [-ConsiderWarningAsError]
  [-DefaultServiceTypeMaxPercentUnhealthyPartitionsPerService <Int32>]
@@ -494,7 +494,7 @@ The mode used to monitor health during a rolling upgrade.
 The values are Monitored, and UnmonitoredAuto.
 
 ```yaml
-Type: Microsoft.Azure.Commands.ServiceFabric.Models.UpgradeMode
+Type: Microsoft.Azure.Commands.ServiceFabric.Models.ApplicationUpgradeMode
 Parameter Sets: (All)
 Aliases:
 Accepted values: Monitored, UnmonitoredAuto
