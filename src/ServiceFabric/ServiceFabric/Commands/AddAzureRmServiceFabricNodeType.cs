@@ -202,7 +202,7 @@ namespace Microsoft.Azure.Commands.ServiceFabric.Commands
                      Tags = GetServiceFabricTags(),
                      UpgradePolicy = new UpgradePolicy()
                      {
-                         Mode = UpgradeMode.Automatic
+                         Mode = Azure.Commands.Common.Compute.Version_2018_04.Models.UpgradeMode.Automatic
                      },
                      VirtualMachineProfile = virtualMachineScaleSetProfile
                  });
