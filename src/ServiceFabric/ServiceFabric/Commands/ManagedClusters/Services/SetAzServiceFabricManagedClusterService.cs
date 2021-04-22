@@ -369,7 +369,7 @@ namespace Microsoft.Azure.Commands.ServiceFabric.Commands
             }
         }
 
-        private ServiceResource GetUpdatedServiceParams(ServiceResource inputObject = null)
+        private ServiceResource GetUpdatedServiceParams(PSManagedService inputObject = null)
         {
             ServiceResource currentService;
             if (inputObject == null)
@@ -391,7 +391,7 @@ namespace Microsoft.Azure.Commands.ServiceFabric.Commands
             }
             else
             {
-                currentService = inputObject;
+                currentService = inputObject.ToServiceResource();
             }
 
             WriteVerbose($"Updating managed service '{this.Name}.'");
